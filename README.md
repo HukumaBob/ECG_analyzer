@@ -54,12 +54,16 @@ npm install
 
 ### 4. Model checkpoint
 
-The ECG-FM checkpoint is not included in this repository. Download it from [HuggingFace](https://huggingface.co/wanglab/ecg-fm) and place the files at a path of your choice:
+The ECG-FM checkpoint is not included in this repository. Download it from [HuggingFace](https://huggingface.co/wanglab/ecg-fm) and place the files into the `ckpts/` directory at the project root:
 
 ```
-/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt
-/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.yaml
+ECG/
+└── ckpts/
+    ├── mimic_iv_ecg_finetuned.pt
+    └── mimic_iv_ecg_finetuned.yaml
 ```
+
+Alternatively, set the `ECG_FM_CKPT` environment variable to point to the `.pt` file at any custom path.
 
 ## Running
 
@@ -67,8 +71,14 @@ The ECG-FM checkpoint is not included in this repository. Download it from [Hugg
 
 ```bash
 cd backend
+HF_HOME=/path/to/hf-cache uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+If the checkpoint is not in `ckpts/` at the project root, override the path:
+
+```bash
+ECG_FM_CKPT=/custom/path/mimic_iv_ecg_finetuned.pt \
 HF_HOME=/path/to/hf-cache \
-ECG_FM_CKPT=/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt \
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -86,7 +96,7 @@ Open in browser: http://localhost:5173
 | Variable | Required | Description |
 |----------|:--------:|-------------|
 | `HF_HOME` | yes | Path to Hugging Face cache |
-| `ECG_FM_CKPT` | yes | Path to the `.pt` model checkpoint |
+| `ECG_FM_CKPT` | no | Path to the `.pt` checkpoint (default: `ckpts/mimic_iv_ecg_finetuned.pt`) |
 | `UV_CACHE_DIR` | no | Custom uv cache directory |
 
 ## Reproducibility

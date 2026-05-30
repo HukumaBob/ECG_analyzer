@@ -21,7 +21,8 @@ env/
 *.env
 .env.*
 
-# Model weights (stored separately in ECG-FM/ckpts/)
+# Model weights
+ckpts/
 *.pt
 *.ckpt
 *.pth

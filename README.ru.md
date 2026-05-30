@@ -54,12 +54,16 @@ npm install
 
 ### 4. Чекпойнт модели
 
-Модель ECG-FM не входит в репозиторий. Скопируйте файлы чекпойнта в директорию вне репозитория и укажите путь при запуске:
+Модель ECG-FM не входит в репозиторий. Скачайте с [HuggingFace](https://huggingface.co/wanglab/ecg-fm) и положите в папку `ckpts/` в корне проекта:
 
 ```
-/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt
-/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.yaml
+ECG/
+└── ckpts/
+    ├── mimic_iv_ecg_finetuned.pt
+    └── mimic_iv_ecg_finetuned.yaml
 ```
+
+Если файлы лежат в другом месте — укажите путь через переменную окружения `ECG_FM_CKPT`.
 
 ## Запуск
 
@@ -67,8 +71,14 @@ npm install
 
 ```bash
 cd backend
+HF_HOME=/path/to/hf-cache uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Если чекпойнт не в `ckpts/` в корне проекта:
+
+```bash
+ECG_FM_CKPT=/custom/path/mimic_iv_ecg_finetuned.pt \
 HF_HOME=/path/to/hf-cache \
-ECG_FM_CKPT=/path/to/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt \
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -86,7 +96,7 @@ npm run dev
 | Переменная | Обязательная | Описание |
 |------------|:---:|---------|
 | `HF_HOME` | да | Путь к кешу Hugging Face |
-| `ECG_FM_CKPT` | да | Путь к `.pt` чекпойнту модели |
+| `ECG_FM_CKPT` | нет | Путь к `.pt` чекпойнту (по умолчанию: `ckpts/mimic_iv_ecg_finetuned.pt`) |
 | `UV_CACHE_DIR` | нет | Путь к кешу uv (по умолчанию — системный) |
 
 ## Воспроизводимость окружения

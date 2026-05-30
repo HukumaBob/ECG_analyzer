@@ -1,13 +1,14 @@
 """
 Singleton загрузчика модели ECG-FM.
 
-Чекпойнт: /mnt/work-disk/Documents/Dev/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt
-Конфиг:    /mnt/work-disk/Documents/Dev/ECG-FM/ckpts/mimic_iv_ecg_finetuned.yaml
+Чекпойнт и конфиг ищутся в <project_root>/ckpts/ по умолчанию.
+Переопределяется переменной окружения ECG_FM_CKPT (путь до .pt файла).
 
 Модель загружается через fairseq-signals (editable install обязателен).
 """
 
 import logging
+import os
 import threading
 from pathlib import Path
 from typing import Optional
@@ -16,8 +17,17 @@ import torch
 
 logger = logging.getLogger(__name__)
 
-CHECKPOINT_PATH = Path("/mnt/work-disk/Documents/Dev/ECG-FM/ckpts/mimic_iv_ecg_finetuned.pt")
-CONFIG_PATH = Path("/mnt/work-disk/Documents/Dev/ECG-FM/ckpts/mimic_iv_ecg_finetuned.yaml")
+# <project_root>/ckpts/ — два уровня вверх от этого файла (app/services/loader.py)
+_DEFAULT_CKPTS_DIR = Path(__file__).resolve().parents[3] / "ckpts"
+_CKPT_NAME = "mimic_iv_ecg_finetuned.pt"
+_CFG_NAME = "mimic_iv_ecg_finetuned.yaml"
+
+if "ECG_FM_CKPT" in os.environ:
+    CHECKPOINT_PATH = Path(os.environ["ECG_FM_CKPT"])
+    CONFIG_PATH = CHECKPOINT_PATH.with_suffix(".yaml")
+else:
+    CHECKPOINT_PATH = _DEFAULT_CKPTS_DIR / _CKPT_NAME
+    CONFIG_PATH = _DEFAULT_CKPTS_DIR / _CFG_NAME
 
 # 17 классов в том порядке, в котором их возвращает модель
 CLASS_LABELS: list[str] = [
