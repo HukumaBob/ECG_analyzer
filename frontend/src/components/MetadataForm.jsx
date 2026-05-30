@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLang } from '../i18n/LangContext'
 
 const FIELD_STYLE = {
   width: '100%',
@@ -18,6 +19,7 @@ const LABEL_STYLE = {
 }
 
 export default function MetadataForm({ value, onChange }) {
+  const { t } = useLang()
   const [open, setOpen] = useState(false)
 
   function update(field, val) {
@@ -43,19 +45,16 @@ export default function MetadataForm({ value, onChange }) {
           color: '#374151',
         }}
       >
-        <span>Клинические данные (необязательно)</span>
+        <span>{t.metaTitle}</span>
         <span>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div>
-            <label style={LABEL_STYLE}>Возраст</label>
+            <label style={LABEL_STYLE}>{t.metaAge}</label>
             <input
-              type="number"
-              min={0}
-              max={130}
-              placeholder="лет"
+              type="number" min={0} max={130} placeholder={t.metaAgePlaceholder}
               style={FIELD_STYLE}
               value={value.age ?? ''}
               onChange={e => update('age', e.target.value ? Number(e.target.value) : null)}
@@ -63,25 +62,18 @@ export default function MetadataForm({ value, onChange }) {
           </div>
 
           <div>
-            <label style={LABEL_STYLE}>Пол</label>
-            <select
-              style={FIELD_STYLE}
-              value={value.sex ?? ''}
-              onChange={e => update('sex', e.target.value || null)}
-            >
-              <option value="">— не указан —</option>
-              <option value="M">Мужской</option>
-              <option value="F">Женский</option>
+            <label style={LABEL_STYLE}>{t.metaSex}</label>
+            <select style={FIELD_STYLE} value={value.sex ?? ''} onChange={e => update('sex', e.target.value || null)}>
+              <option value="">{t.metaSexUnknown}</option>
+              <option value="M">{t.metaSexM}</option>
+              <option value="F">{t.metaSexF}</option>
             </select>
           </div>
 
           <div>
-            <label style={LABEL_STYLE}>ЧСС (уд/мин)</label>
+            <label style={LABEL_STYLE}>{t.metaHR}</label>
             <input
-              type="number"
-              min={20}
-              max={300}
-              placeholder="уд/мин"
+              type="number" min={20} max={300} placeholder={t.metaHRPlaceholder}
               style={FIELD_STYLE}
               value={value.heart_rate ?? ''}
               onChange={e => update('heart_rate', e.target.value ? Number(e.target.value) : null)}
@@ -89,13 +81,9 @@ export default function MetadataForm({ value, onChange }) {
           </div>
 
           <div>
-            <label style={LABEL_STYLE}>K⁺ (ммоль/л)</label>
+            <label style={LABEL_STYLE}>{t.metaK}</label>
             <input
-              type="number"
-              step="0.1"
-              min={1}
-              max={9}
-              placeholder="ммоль/л"
+              type="number" step="0.1" min={1} max={9} placeholder="mmol/L"
               style={FIELD_STYLE}
               value={value.potassium ?? ''}
               onChange={e => update('potassium', e.target.value ? Number(e.target.value) : null)}
@@ -103,13 +91,9 @@ export default function MetadataForm({ value, onChange }) {
           </div>
 
           <div>
-            <label style={LABEL_STYLE}>Mg²⁺ (ммоль/л)</label>
+            <label style={LABEL_STYLE}>{t.metaMg}</label>
             <input
-              type="number"
-              step="0.1"
-              min={0.3}
-              max={3}
-              placeholder="ммоль/л"
+              type="number" step="0.1" min={0.3} max={3} placeholder="mmol/L"
               style={FIELD_STYLE}
               value={value.magnesium ?? ''}
               onChange={e => update('magnesium', e.target.value ? Number(e.target.value) : null)}
@@ -117,23 +101,22 @@ export default function MetadataForm({ value, onChange }) {
           </div>
 
           <div>
-            <label style={LABEL_STYLE}>Электрокардиостимулятор</label>
+            <label style={LABEL_STYLE}>{t.metaPacemaker}</label>
             <select
               style={FIELD_STYLE}
               value={value.has_pacemaker === null ? '' : String(value.has_pacemaker)}
               onChange={e => update('has_pacemaker', e.target.value === '' ? null : e.target.value === 'true')}
             >
-              <option value="">— не указан —</option>
-              <option value="true">Да</option>
-              <option value="false">Нет</option>
+              <option value="">{t.metaPacemakerUnknown}</option>
+              <option value="true">{t.metaPacemakerYes}</option>
+              <option value="false">{t.metaPacemakerNo}</option>
             </select>
           </div>
 
           <div style={{ gridColumn: '1 / -1' }}>
-            <label style={LABEL_STYLE}>Препараты (через запятую)</label>
+            <label style={LABEL_STYLE}>{t.metaMeds}</label>
             <input
-              type="text"
-              placeholder="дигоксин, амиодарон..."
+              type="text" placeholder={t.metaMedsPlaceholder}
               style={FIELD_STYLE}
               value={(value.medications ?? []).join(', ')}
               onChange={e => update('medications', e.target.value ? e.target.value.split(',').map(s => s.trim()).filter(Boolean) : [])}
@@ -141,10 +124,9 @@ export default function MetadataForm({ value, onChange }) {
           </div>
 
           <div style={{ gridColumn: '1 / -1' }}>
-            <label style={LABEL_STYLE}>Коды МКБ-10 (через запятую)</label>
+            <label style={LABEL_STYLE}>{t.metaIcd}</label>
             <input
-              type="text"
-              placeholder="I48, I10..."
+              type="text" placeholder={t.metaIcdPlaceholder}
               style={FIELD_STYLE}
               value={(value.icd10_codes ?? []).join(', ')}
               onChange={e => update('icd10_codes', e.target.value ? e.target.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [])}

@@ -1,7 +1,11 @@
+import { useLang } from '../i18n/LangContext'
+
 export default function ReportPanel({ result }) {
+  const { lang, t } = useLang()
   if (!result) return null
 
-  const { has_critical, conclusion, segments_analyzed, device_used, warning, request_id } = result
+  const { has_critical, conclusion, conclusion_en, segments_analyzed, device_used, warning, request_id } = result
+  const text = lang === 'en' ? (conclusion_en || conclusion) : conclusion
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -19,13 +23,8 @@ export default function ReportPanel({ result }) {
         }}>
           <span style={{ fontSize: 28, lineHeight: 1 }}>⚠️</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>
-              КРИТИЧЕСКАЯ НАХОДКА — ТРЕБУЕТСЯ НЕМЕДЛЕННОЕ ВНИМАНИЕ ВРАЧА
-            </div>
-            <div style={{ fontSize: 14, opacity: 0.9 }}>
-              Обнаружен один или несколько критических диагностических признаков.
-              Данное заключение носит вспомогательный характер и не заменяет клиническую оценку.
-            </div>
+            <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{t.alertTitle}</div>
+            <div style={{ fontSize: 14, opacity: 0.9 }}>{t.alertBody}</div>
           </div>
         </div>
       )}
@@ -44,7 +43,7 @@ export default function ReportPanel({ result }) {
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 20 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#1f2937' }}>Заключение</h3>
+        <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#1f2937' }}>{t.reportTitle}</h3>
         <pre style={{
           margin: 0,
           fontFamily: 'inherit',
@@ -54,25 +53,18 @@ export default function ReportPanel({ result }) {
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
         }}>
-          {conclusion}
+          {text}
         </pre>
       </div>
 
-      <div style={{
-        display: 'flex',
-        gap: 16,
-        flexWrap: 'wrap',
-        fontSize: 12,
-        color: '#9ca3af',
-        padding: '0 4px',
-      }}>
-        <span>Сегментов проанализировано: <b style={{ color: '#6b7280' }}>{segments_analyzed}</b></span>
-        <span>Устройство: <b style={{ color: '#6b7280' }}>{device_used}</b></span>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#9ca3af', padding: '0 4px' }}>
+        <span>{t.segmentsLabel}: <b style={{ color: '#6b7280' }}>{segments_analyzed}</b></span>
+        <span>{t.deviceLabel}: <b style={{ color: '#6b7280' }}>{device_used}</b></span>
         <span style={{ marginLeft: 'auto', fontFamily: 'monospace' }}>ID: {request_id?.slice(0, 8)}</span>
       </div>
 
       <p style={{ margin: 0, fontSize: 11, color: '#d1d5db', fontStyle: 'italic' }}>
-        Система не является медицинским диагностическим прибором. Все выводы носят вспомогательный характер.
+        {t.disclaimer}
       </p>
     </div>
   )

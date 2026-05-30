@@ -24,6 +24,7 @@ class Priority(str, Enum):
 class DiagnosisItem(BaseModel):
     label: str = Field(..., description="Машинный идентификатор класса")
     label_ru: str = Field(..., description="Название на русском")
+    label_en: str = Field(..., description="Name in English")
     probability: float = Field(..., ge=0.0, le=1.0, description="Вероятность [0..1]")
     triggered: bool = Field(..., description="Превышен ли порог срабатывания")
     priority: Priority
@@ -97,6 +98,7 @@ class AnalyzeResponse(BaseModel):
     has_critical: bool = Field(..., description="True если сработал хотя бы один критический класс")
     diagnoses: list[DiagnosisItem] = Field(..., description="Список всех 17 классов с вероятностями")
     conclusion: str = Field(..., description="Текстовое заключение на русском языке")
+    conclusion_en: str = Field(..., description="Report text in English")
     segments_analyzed: int = Field(..., description="Количество 5-секундных сегментов ЭКГ")
     device_used: str = Field(..., description="cuda или cpu")
     warning: Optional[str] = Field(None, description="Предупреждение (напр. низкое качество сигнала)")

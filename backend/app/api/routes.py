@@ -190,7 +190,7 @@ async def analyze(
 
     diagnoses = build_diagnoses(final_probs)
     poor_quality = check_poor_quality(diagnoses)
-    conclusion = build_conclusion(diagnoses, poor_quality)
+    conclusion, conclusion_en = build_conclusion(diagnoses, poor_quality)
     has_critical = any(d.triggered and d.label in {"ventricular_tachycardia", "infarction"} for d in diagnoses)
 
     try:
@@ -204,6 +204,7 @@ async def analyze(
         has_critical=has_critical,
         diagnoses=diagnoses,
         conclusion=conclusion,
+        conclusion_en=conclusion_en,
         segments_analyzed=len(segments),
         device_used=str(loader.device),
         warning="Низкое качество сигнала: достоверность снижена." if poor_quality else None,

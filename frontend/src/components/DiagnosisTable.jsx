@@ -1,9 +1,11 @@
+import { useLang } from '../i18n/LangContext'
+
 const PRIORITY_CONFIG = {
-  critical: { label: 'Критический', bg: '#fee2e2', color: '#991b1b', badge: '#dc2626' },
-  high: { label: 'Высокий', bg: '#fef3c7', color: '#92400e', badge: '#d97706' },
-  moderate: { label: 'Умеренный', bg: '#fffbeb', color: '#78350f', badge: '#f59e0b' },
-  technical: { label: 'Технический', bg: '#f3f4f6', color: '#374151', badge: '#9ca3af' },
-  normal: { label: 'Норма', bg: '#f0fdf4', color: '#166534', badge: '#16a34a' },
+  critical: { bg: '#fee2e2', color: '#991b1b', badge: '#dc2626' },
+  high:     { bg: '#fef3c7', color: '#92400e', badge: '#d97706' },
+  moderate: { bg: '#fffbeb', color: '#78350f', badge: '#f59e0b' },
+  technical:{ bg: '#f3f4f6', color: '#374151', badge: '#9ca3af' },
+  normal:   { bg: '#f0fdf4', color: '#166534', badge: '#16a34a' },
 }
 
 function ProbBar({ value }) {
@@ -22,32 +24,37 @@ function ProbBar({ value }) {
 }
 
 export default function DiagnosisTable({ diagnoses }) {
+  const { lang, t } = useLang()
   if (!diagnoses || diagnoses.length === 0) return null
 
   const sorted = [...diagnoses].sort((a, b) => b.probability - a.probability)
+
+  const PRIORITY_LABELS = {
+    critical:  t.priorityCritical,
+    high:      t.priorityHigh,
+    moderate:  t.priorityModerate,
+    technical: t.priorityTechnical,
+    normal:    t.priorityNormal,
+  }
+
+  const TH = { padding: '10px 14px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }
 
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#f9fafb' }}>
-            <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }}>
-              Диагноз
-            </th>
-            <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: 160 }}>
-              Вероятность
-            </th>
-            <th style={{ padding: '10px 14px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: 110 }}>
-              Приоритет
-            </th>
-            <th style={{ padding: '10px 14px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb', width: 80 }}>
-              Сработал
-            </th>
+            <th style={TH}>{t.colDiagnosis}</th>
+            <th style={{ ...TH, width: 160 }}>{t.colProbability}</th>
+            <th style={{ ...TH, textAlign: 'center', width: 110 }}>{t.colPriority}</th>
+            <th style={{ ...TH, textAlign: 'center', width: 80 }}>{t.colTriggered}</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((d, idx) => {
             const cfg = PRIORITY_CONFIG[d.priority] ?? PRIORITY_CONFIG.technical
+            const name = lang === 'en' ? (d.label_en || d.label) : (d.label_ru || d.label)
+            const subname = lang === 'en' ? d.label : d.label_en
             return (
               <tr
                 key={d.label}
@@ -57,10 +64,8 @@ export default function DiagnosisTable({ diagnoses }) {
                 }}
               >
                 <td style={{ padding: '10px 14px' }}>
-                  <div style={{ fontWeight: d.triggered ? 600 : 400, color: '#1f2937', fontSize: 14 }}>
-                    {d.label_ru || d.label}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{d.label}</div>
+                  <div style={{ fontWeight: d.triggered ? 600 : 400, color: '#1f2937', fontSize: 14 }}>{name}</div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{subname}</div>
                 </td>
                 <td style={{ padding: '10px 14px' }}>
                   <ProbBar value={d.probability} />
@@ -76,7 +81,7 @@ export default function DiagnosisTable({ diagnoses }) {
                     color: cfg.badge,
                     border: `1px solid ${cfg.badge}44`,
                   }}>
-                    {cfg.label}
+                    {PRIORITY_LABELS[d.priority] ?? d.priority}
                   </span>
                 </td>
                 <td style={{ padding: '10px 14px', textAlign: 'center' }}>

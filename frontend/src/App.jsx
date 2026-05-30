@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { LangProvider, useLang } from './i18n/LangContext'
 import UploadZone from './components/UploadZone'
 import MetadataForm from './components/MetadataForm'
 import EcgChart from './components/EcgChart'
@@ -6,14 +7,9 @@ import DiagnosisTable from './components/DiagnosisTable'
 import ReportPanel from './components/ReportPanel'
 
 const EMPTY_META = {
-  age: null,
-  sex: null,
-  heart_rate: null,
-  medications: [],
-  icd10_codes: [],
-  potassium: null,
-  magnesium: null,
-  has_pacemaker: null,
+  age: null, sex: null, heart_rate: null,
+  medications: [], icd10_codes: [],
+  potassium: null, magnesium: null, has_pacemaker: null,
 }
 
 function buildMetadataJson(meta) {
@@ -27,10 +23,11 @@ function buildMetadataJson(meta) {
   return Object.keys(clean).length > 0 ? JSON.stringify(clean) : null
 }
 
-export default function App() {
-  const [files, setFiles] = useState([])   // массив File
+function AppInner() {
+  const { lang, t, toggle } = useLang()
+  const [files, setFiles] = useState([])
   const [meta, setMeta] = useState(EMPTY_META)
-  const [status, setStatus] = useState('idle') // idle | loading | done | error
+  const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
   const [ecgPreview, setEcgPreview] = useState(null)
   const [error, setError] = useState(null)
@@ -56,11 +53,7 @@ export default function App() {
       const metaJson = buildMetadataJson(meta)
       if (metaJson) formData.append('metadata_json', metaJson)
 
-      const res = await fetch('/api/v1/analyze', {
-        method: 'POST',
-        body: formData,
-      })
-
+      const res = await fetch('/api/v1/analyze', { method: 'POST', body: formData })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: res.statusText }))
         throw new Error(errData.detail || `HTTP ${res.status}`)
@@ -68,12 +61,7 @@ export default function App() {
 
       const data = await res.json()
       setResult(data)
-
-      // Try to get ECG preview data if backend returns it
-      if (data.ecg_preview) {
-        setEcgPreview(data.ecg_preview)
-      }
-
+      if (data.ecg_preview) setEcgPreview(data.ecg_preview)
       setStatus('done')
     } catch (e) {
       setError(e.message)
@@ -92,7 +80,6 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f1f5f9', fontFamily: 'system-ui, sans-serif' }}>
-      {/* Header */}
       <header style={{
         background: '#1e40af',
         color: '#fff',
@@ -104,53 +91,61 @@ export default function App() {
       }}>
         <span style={{ fontSize: 26 }}>🫀</span>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 18, lineHeight: 1.2 }}>ЭКГ-Интерпретатор</div>
-          <div style={{ fontSize: 12, opacity: 0.75 }}>Система вспомогательной диагностики · 17 классов · ECG-FM</div>
+          <div style={{ fontWeight: 700, fontSize: 18, lineHeight: 1.2 }}>{t.appTitle}</div>
+          <div style={{ fontSize: 12, opacity: 0.75 }}>{t.appSubtitle}</div>
         </div>
-        {status === 'done' && (
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+          {status === 'done' && (
+            <button
+              onClick={handleReset}
+              style={{
+                padding: '6px 14px',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 6,
+                cursor: 'pointer',
+                fontSize: 13,
+              }}
+            >
+              {t.newAnalysis}
+            </button>
+          )}
           <button
-            onClick={handleReset}
+            onClick={toggle}
+            title={lang === 'ru' ? 'Switch to English' : 'Переключить на русский'}
             style={{
-              marginLeft: 'auto',
-              padding: '6px 14px',
+              padding: '5px 12px',
               background: 'rgba(255,255,255,0.15)',
               color: '#fff',
               border: '1px solid rgba(255,255,255,0.3)',
               borderRadius: 6,
               cursor: 'pointer',
               fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: '0.03em',
             }}
           >
-            Новый анализ
+            {lang === 'ru' ? 'EN' : 'RU'}
           </button>
-        )}
+        </div>
       </header>
 
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* Upload + metadata block — hide when done */}
         {status !== 'done' && (
           <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ margin: 0, fontSize: 16, color: '#1f2937' }}>Загрузка ЭКГ</h2>
+            <h2 style={{ margin: 0, fontSize: 16, color: '#1f2937' }}>{t.uploadTitle}</h2>
 
             <UploadZone onFilesSelect={handleFilesSelect} disabled={status === 'loading'} />
 
             {files.length > 0 && (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-                padding: '8px 12px',
-                background: '#eff6ff',
-                borderRadius: 6,
-                fontSize: 13,
-                color: '#1e40af',
-              }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 12px', background: '#eff6ff', borderRadius: 6, fontSize: 13, color: '#1e40af' }}>
                 {files.map(f => (
                   <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span>📄</span>
                     <span style={{ fontWeight: 500 }}>{f.name}</span>
-                    <span style={{ color: '#6b7280' }}>({(f.size / 1024).toFixed(1)} КБ)</span>
+                    <span style={{ color: '#6b7280' }}>({(f.size / 1024).toFixed(1)} KB)</span>
                   </div>
                 ))}
               </div>
@@ -173,32 +168,23 @@ export default function App() {
                 transition: 'background 0.2s',
               }}
             >
-              {status === 'loading' ? '⏳ Анализируем…' : '▶ Анализировать ЭКГ'}
+              {status === 'loading' ? t.analyzingBtn : t.analyzeBtn}
             </button>
 
             {status === 'loading' && (
               <p style={{ margin: 0, textAlign: 'center', color: '#6b7280', fontSize: 13 }}>
-                Обработка сигнала и вывод модели… (CPU ≤30 сек, GPU ≤5 сек)
+                {t.analyzingHint}
               </p>
             )}
           </div>
         )}
 
-        {/* Error */}
         {status === 'error' && (
-          <div style={{
-            background: '#fef2f2',
-            border: '1px solid #fca5a5',
-            borderRadius: 10,
-            padding: '14px 18px',
-            color: '#991b1b',
-            fontSize: 14,
-          }}>
-            <b>Ошибка:</b> {error}
+          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 10, padding: '14px 18px', color: '#991b1b', fontSize: 14 }}>
+            <b>{t.errorLabel}:</b> {error}
           </div>
         )}
 
-        {/* Results */}
         {status === 'done' && result && (
           <>
             <ReportPanel result={result} />
@@ -209,5 +195,13 @@ export default function App() {
 
       </main>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <LangProvider>
+      <AppInner />
+    </LangProvider>
   )
 }

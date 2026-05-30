@@ -1,30 +1,31 @@
 import { useState, useRef } from 'react'
+import { useLang } from '../i18n/LangContext'
 
 const ACCEPTED_EXTENSIONS = ['.mat', '.csv', '.hea', '.dat']
 
-function validateFiles(fileList) {
+function validateFiles(fileList, t) {
   const files = Array.from(fileList)
   const invalid = files.filter(f => !ACCEPTED_EXTENSIONS.some(ext => f.name.toLowerCase().endsWith(ext)))
   if (invalid.length > 0) {
-    return { ok: false, error: `Неподдерживаемый формат: ${invalid.map(f => f.name).join(', ')}. Допустимые: .mat, .csv, .hea, .dat` }
+    return { ok: false, error: `${t.unsupportedFormat}: ${invalid.map(f => f.name).join(', ')}. ${t.allowedFormats}` }
   }
-  // Если есть .hea — должен быть и .dat
   const hasHea = files.some(f => f.name.toLowerCase().endsWith('.hea'))
   const hasDat = files.some(f => f.name.toLowerCase().endsWith('.dat'))
   if (hasHea && !hasDat) {
-    return { ok: false, error: 'Для формата WFDB необходимо загрузить оба файла: .hea и .dat' }
+    return { ok: false, error: t.wfdbError }
   }
   return { ok: true }
 }
 
 export default function UploadZone({ onFilesSelect, disabled }) {
+  const { t } = useLang()
   const [dragOver, setDragOver] = useState(false)
   const inputRef = useRef(null)
 
   function handleFiles(fileList) {
     const files = Array.from(fileList)
     if (files.length === 0) return
-    const { ok, error } = validateFiles(files)
+    const { ok, error } = validateFiles(files, t)
     if (!ok) { alert(error); return }
     onFilesSelect(files)
   }
@@ -59,15 +60,9 @@ export default function UploadZone({ onFilesSelect, disabled }) {
       onClick={() => !disabled && inputRef.current?.click()}
     >
       <div style={{ fontSize: 40, marginBottom: 8 }}>📂</div>
-      <p style={{ margin: 0, fontWeight: 600, color: '#374151' }}>
-        Перетащите файл(ы) ЭКГ сюда
-      </p>
-      <p style={{ margin: '4px 0 4px', color: '#6b7280', fontSize: 14 }}>
-        Форматы: .mat, .csv — один файл
-      </p>
-      <p style={{ margin: '0 0 12px', color: '#6b7280', fontSize: 14 }}>
-        WFDB — выберите <b>.hea</b> и <b>.dat</b> вместе
-      </p>
+      <p style={{ margin: 0, fontWeight: 600, color: '#374151' }}>{t.dropzone}</p>
+      <p style={{ margin: '4px 0 4px', color: '#6b7280', fontSize: 14 }}>{t.dropzoneFormats}</p>
+      <p style={{ margin: '0 0 12px', color: '#6b7280', fontSize: 14 }}>{t.dropzoneWfdb}</p>
       <button
         type="button"
         disabled={disabled}
@@ -82,7 +77,7 @@ export default function UploadZone({ onFilesSelect, disabled }) {
           fontWeight: 500,
         }}
       >
-        Выбрать файл(ы)
+        {t.chooseFiles}
       </button>
       <input
         ref={inputRef}
